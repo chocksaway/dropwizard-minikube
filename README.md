@@ -510,10 +510,15 @@ $
 $kubectl get pods -n x -o yaml |grep containerPort
       - containerPort: 8080
 $
+```
 
+The kubectl port forward command will redirect the request (to the pod):
+```
 $ kubectl port-forward -n x terraform-example-7fb55bccdd-nwt6k 8080
 Forwarding from 127.0.0.1:8080 -> 8080
 Forwarding from [::1]:8080 -> 8080
+Handling connection for 8080
+Handling connection for 8080
 ```
 
 Use the curl command to go to http://127.0.0.1:8080/hello-world?name=alice
@@ -521,15 +526,6 @@ Use the curl command to go to http://127.0.0.1:8080/hello-world?name=alice
 $ curl http://127.0.0.1:8080/hello-world?name=alice
 {"id":2,"content":"Hello, alice!"}
 $
-```
-
-The kubectl port forward will redirect the request:
-```
-$ kubectl port-forward -n x terraform-example-7fb55bccdd-nwt6k 8080
-Forwarding from 127.0.0.1:8080 -> 8080
-Forwarding from [::1]:8080 -> 8080
-Handling connection for 8080
-Handling connection for 8080
 ```
 
 *terraform destroy*
