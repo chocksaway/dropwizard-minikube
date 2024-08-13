@@ -12,3 +12,7 @@
 /dataSources/
 /dataSources.local.xml
 /dependency-reduced-pom.xml
+/.terraform.lock.hcl
+/terraform.tfstate
+/terraform.tfstate.backup
+/.terraform/providers/registry.terraform.io/hashicorp/kubernetes/2.11.0/linux_amd64/terraform-provider-kubernetes_v2.11.0_x5
