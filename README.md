@@ -161,3 +161,382 @@ You will see the port redirection:
 ```
 Handling connection for 8080
 ```
+### Terraform
+
+This section is optional. You can use Terraform to deploy the hello:0.1.0 docker image.
+
+Install [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+
+Create file named providers.tf:
+```
+terraform {
+  required_providers {
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+      version = "2.11.0"
+    }
+  }
+}
+
+provider "kubernetes" {
+  config_path    = "~/.kube/config"
+  config_context = "minikube"
+}
+```
+
+Create file name main.tf:
+```
+resource "kubernetes_namespace" "hello" {
+  metadata {
+     name = "x"
+  }
+}
+
+resource "kubernetes_deployment" "hello" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      test = "MyExampleApp"
+    }
+     namespace = "x"
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = {
+        test = "MyExampleApp"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          test = "MyExampleApp"
+        }
+      }
+
+      spec {
+        container {
+          image = "hello:0.1.0"
+          name  = "example"
+          port {
+            container_port = 8080
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+The important part is the image = "hello:0.1.0", and the container_port = 8080.
+
+Run the following commands:
+
+*terraform init*
+```
+$ terraform init
+Initializing the backend...
+Initializing provider plugins...
+- Finding hashicorp/kubernetes versions matching "2.11.0"...
+- Installing hashicorp/kubernetes v2.11.0...
+- Installed hashicorp/kubernetes v2.11.0 (signed by HashiCorp)
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+$
+```
+
+*terraform plan*
+
+```
+$ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # kubernetes_deployment.hello will be created
+  + resource "kubernetes_deployment" "hello" {
+      + id               = (known after apply)
+      + wait_for_rollout = true
+
+      + metadata {
+          + generation       = (known after apply)
+          + labels           = {
+              + "test" = "MyExampleApp"
+            }
+          + name             = "terraform-example"
+          + namespace        = "x"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + spec {
+          + min_ready_seconds         = 0
+          + paused                    = false
+          + progress_deadline_seconds = 600
+          + replicas                  = "1"
+          + revision_history_limit    = 10
+
+          + selector {
+              + match_labels = {
+                  + "test" = "MyExampleApp"
+                }
+            }
+
+          + strategy (known after apply)
+
+          + template {
+              + metadata {
+                  + generation       = (known after apply)
+                  + labels           = {
+                      + "test" = "MyExampleApp"
+                    }
+                  + name             = (known after apply)
+                  + resource_version = (known after apply)
+                  + uid              = (known after apply)
+                }
+              + spec {
+                  + automount_service_account_token  = true
+                  + dns_policy                       = "ClusterFirst"
+                  + enable_service_links             = true
+                  + host_ipc                         = false
+                  + host_network                     = false
+                  + host_pid                         = false
+                  + hostname                         = (known after apply)
+                  + node_name                        = (known after apply)
+                  + restart_policy                   = "Always"
+                  + service_account_name             = (known after apply)
+                  + share_process_namespace          = false
+                  + termination_grace_period_seconds = 30
+
+                  + container {
+                      + image                      = "hello:0.1.0"
+                      + image_pull_policy          = (known after apply)
+                      + name                       = "example"
+                      + stdin                      = false
+                      + stdin_once                 = false
+                      + termination_message_path   = "/dev/termination-log"
+                      + termination_message_policy = (known after apply)
+                      + tty                        = false
+
+                      + port {
+                          + container_port = 8080
+                          + protocol       = "TCP"
+                        }
+
+                      + resources (known after apply)
+                    }
+
+                  + image_pull_secrets (known after apply)
+
+                  + readiness_gate (known after apply)
+
+                  + volume (known after apply)
+                }
+            }
+        }
+    }
+
+  # kubernetes_namespace.hello will be created
+  + resource "kubernetes_namespace" "hello" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "x"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+$
+```
+
+*terraform apply*
+
+```
+$ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # kubernetes_deployment.hello will be created
+  + resource "kubernetes_deployment" "hello" {
+      + id               = (known after apply)
+      + wait_for_rollout = true
+
+      + metadata {
+          + generation       = (known after apply)
+          + labels           = {
+              + "test" = "MyExampleApp"
+            }
+          + name             = "terraform-example"
+          + namespace        = "x"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + spec {
+          + min_ready_seconds         = 0
+          + paused                    = false
+          + progress_deadline_seconds = 600
+          + replicas                  = "1"
+          + revision_history_limit    = 10
+
+          + selector {
+              + match_labels = {
+                  + "test" = "MyExampleApp"
+                }
+            }
+
+          + strategy (known after apply)
+
+          + template {
+              + metadata {
+                  + generation       = (known after apply)
+                  + labels           = {
+                      + "test" = "MyExampleApp"
+                    }
+                  + name             = (known after apply)
+                  + resource_version = (known after apply)
+                  + uid              = (known after apply)
+                }
+              + spec {
+                  + automount_service_account_token  = true
+                  + dns_policy                       = "ClusterFirst"
+                  + enable_service_links             = true
+                  + host_ipc                         = false
+                  + host_network                     = false
+                  + host_pid                         = false
+                  + hostname                         = (known after apply)
+                  + node_name                        = (known after apply)
+                  + restart_policy                   = "Always"
+                  + service_account_name             = (known after apply)
+                  + share_process_namespace          = false
+                  + termination_grace_period_seconds = 30
+
+                  + container {
+                      + image                      = "hello:0.1.0"
+                      + image_pull_policy          = (known after apply)
+                      + name                       = "example"
+                      + stdin                      = false
+                      + stdin_once                 = false
+                      + termination_message_path   = "/dev/termination-log"
+                      + termination_message_policy = (known after apply)
+                      + tty                        = false
+
+                      + port {
+                          + container_port = 8080
+                          + protocol       = "TCP"
+                        }
+
+                      + resources (known after apply)
+                    }
+
+                  + image_pull_secrets (known after apply)
+
+                  + readiness_gate (known after apply)
+
+                  + volume (known after apply)
+                }
+            }
+        }
+    }
+
+  # kubernetes_namespace.hello will be created
+  + resource "kubernetes_namespace" "hello" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "x"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+kubernetes_namespace.hello: Creating...
+kubernetes_deployment.hello: Creating...
+kubernetes_namespace.hello: Creation complete after 0s [id=x]
+kubernetes_deployment.hello: Creation complete after 2s [id=x/terraform-example]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+$
+```
+
+Use the kubectl command to check the deployment and pods:
+```
+$ kubectl get deployments -n x
+NAME                READY   UP-TO-DATE   AVAILABLE   AGE
+terraform-example   1/1     1            1           63s
+$
+
+$ kubectl get pods -n x
+NAME                                 READY   STATUS    RESTARTS   AGE
+terraform-example-7fb55bccdd-nwt6k   1/1     Running   0          97s
+$
+
+$kubectl get pods -n x -o yaml |grep containerPort
+      - containerPort: 8080
+$
+
+$ kubectl port-forward -n x terraform-example-7fb55bccdd-nwt6k 8080
+Forwarding from 127.0.0.1:8080 -> 8080
+Forwarding from [::1]:8080 -> 8080
+```
+
+Use the curl command to go to http://127.0.0.1:8080/hello-world?name=alice
+```
+$ curl http://127.0.0.1:8080/hello-world?name=alice
+{"id":2,"content":"Hello, alice!"}
+$
+```
+
+The kubectl port forward will redirect the request:
+```
+$ kubectl port-forward -n x terraform-example-7fb55bccdd-nwt6k 8080
+Forwarding from 127.0.0.1:8080 -> 8080
+Forwarding from [::1]:8080 -> 8080
+Handling connection for 8080
+Handling connection for 8080
+```
+
+
+
+
+
+
+
+
+
