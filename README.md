@@ -233,7 +233,7 @@ resource "kubernetes_deployment" "hello" {
 
 The important part is the image = "hello:0.1.0", and the container_port = 8080.
 
-Run the following commands:
+Run the following commands (init, plan, apply, destroy):
 
 *terraform init*
 ```
@@ -531,6 +531,158 @@ Forwarding from [::1]:8080 -> 8080
 Handling connection for 8080
 Handling connection for 8080
 ```
+
+*terraform destroy*
+
+```
+$ terraform destroy
+kubernetes_namespace.hello: Refreshing state... [id=x]
+kubernetes_deployment.hello: Refreshing state... [id=x/terraform-example]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # kubernetes_deployment.hello will be destroyed
+  - resource "kubernetes_deployment" "hello" {
+      - id               = "x/terraform-example" -> null
+      - wait_for_rollout = true -> null
+
+      - metadata {
+          - annotations      = {} -> null
+          - generation       = 1 -> null
+          - labels           = {
+              - "test" = "MyExampleApp"
+            } -> null
+          - name             = "terraform-example" -> null
+          - namespace        = "x" -> null
+          - resource_version = "10005" -> null
+          - uid              = "9441f854-4935-451a-bb96-be6d59df2ce4" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - spec {
+          - min_ready_seconds         = 0 -> null
+          - paused                    = false -> null
+          - progress_deadline_seconds = 600 -> null
+          - replicas                  = "1" -> null
+          - revision_history_limit    = 10 -> null
+
+          - selector {
+              - match_labels = {
+                  - "test" = "MyExampleApp"
+                } -> null
+            }
+
+          - strategy {
+              - type = "RollingUpdate" -> null
+
+              - rolling_update {
+                  - max_surge       = "25%" -> null
+                  - max_unavailable = "25%" -> null
+                }
+            }
+
+          - template {
+              - metadata {
+                  - annotations      = {} -> null
+                  - generation       = 0 -> null
+                  - labels           = {
+                      - "test" = "MyExampleApp"
+                    } -> null
+                    name             = null
+                    # (4 unchanged attributes hidden)
+                }
+              - spec {
+                  - active_deadline_seconds          = 0 -> null
+                  - automount_service_account_token  = true -> null
+                  - dns_policy                       = "ClusterFirst" -> null
+                  - enable_service_links             = true -> null
+                  - host_ipc                         = false -> null
+                  - host_network                     = false -> null
+                  - host_pid                         = false -> null
+                  - node_selector                    = {} -> null
+                  - restart_policy                   = "Always" -> null
+                  - share_process_namespace          = false -> null
+                  - termination_grace_period_seconds = 30 -> null
+                    # (5 unchanged attributes hidden)
+
+                  - container {
+                      - args                       = [] -> null
+                      - command                    = [] -> null
+                      - image                      = "hello:0.1.0" -> null
+                      - image_pull_policy          = "IfNotPresent" -> null
+                      - name                       = "example" -> null
+                      - stdin                      = false -> null
+                      - stdin_once                 = false -> null
+                      - termination_message_path   = "/dev/termination-log" -> null
+                      - termination_message_policy = "File" -> null
+                      - tty                        = false -> null
+                        # (1 unchanged attribute hidden)
+
+                      - port {
+                          - container_port = 8080 -> null
+                          - host_port      = 0 -> null
+                            name           = null
+                          - protocol       = "TCP" -> null
+                            # (1 unchanged attribute hidden)
+                        }
+
+                      - resources {}
+                    }
+                }
+            }
+        }
+    }
+
+  # kubernetes_namespace.hello will be destroyed
+  - resource "kubernetes_namespace" "hello" {
+      - id = "x" -> null
+
+      - metadata {
+          - annotations      = {} -> null
+          - generation       = 0 -> null
+          - labels           = {} -> null
+          - name             = "x" -> null
+          - resource_version = "9983" -> null
+          - uid              = "7e2b974c-4c81-4e8c-8b35-1344075cc83e" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+Plan: 0 to add, 0 to change, 2 to destroy.
+
+Do you really want to destroy all resources?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes
+
+kubernetes_namespace.hello: Destroying... [id=x]
+kubernetes_deployment.hello: Destroying... [id=x/terraform-example]
+kubernetes_deployment.hello: Destruction complete after 0s
+kubernetes_namespace.hello: Destruction complete after 6s
+
+Destroy complete! Resources: 2 destroyed.
+$
+```
+
+*The port forward will stop:*
+```
+E0813 13:22:00.190729   58487 portforward.go:413] an error occurred forwarding 8080 -> 8080: error forwarding port 8080 to pod 915cbd57ef726b33b7f929a650602d0dfe627b7de455738bf8d786b777619103, uid : Error response from daemon: No such container: 915cbd57ef726b33b7f929a650602d0dfe627b7de455738bf8d786b777619103
+error: lost connection to pod
+```
+
+*The curl command will no longer work:*
+```
+$ curl http://127.0.0.1:8080/hello-world?name=alice
+curl: (52) Empty reply from server
+```
+
+
+
+
 
 
 
