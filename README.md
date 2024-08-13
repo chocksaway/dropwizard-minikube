@@ -147,7 +147,7 @@ hello-7546b7f4fb-zhf66   1/1     Running   1 (18m ago)   8d
 
 The kubectl port forward command will redirect the request (to the pod):
 
-````
+```
 $ kubectl port-forward hello-7546b7f4fb-zhf66 8080
 Forwarding from 127.0.0.1:8080 -> 8080
 Forwarding from [::1]:8080 -> 8080
